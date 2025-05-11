@@ -9,42 +9,18 @@ import Safe, {
 import { gnosisChiado } from 'viem/chains'
 import { createPublicClient, http, formatEther, formatGwei } from 'viem'
 import { SafeMultisigTransactionResponse, TransactionBase } from '@safe-global/types-kit';
-import { SafeInfoResponse } from '@safe-global/api-kit';
 import { SafeDetails } from '../app.component';
-//import dotenv from 'dotenv';
+import { environment as env } from '../../environments/environment';
 
-//dotenv.config();
-
-/*const SEPOLIA_CHAIN_ID = 11155111n;
-const SEPOLIA_TX_SERVICE_URL = 'https://safe-transaction-sepolia.safe.global';
-const SEPOLIA_RPC_URL = 'https://rpc.sepolia.org';
-const RPC_URL = 'https://ethereum-sepolia-rpc.publicnode.com'
-const RPC_GNOSIS = 'https://rpc.gnosis.gateway.fm'
-const SAFE_ADDRESS = '0x60C4Ab82D06Fd7dFE9517e17736C2Dcc77443EF' //private key
-const OWNER_1_PRIVATE_KEY = '0x9cCBDE03eDd71074ea9c49e413FA9CDfF16D263B'; // Replace with actual private key
-*/
-
-//todo move this to a config file .env
-const TX_SERVICE_URL_CHIADO: string = 'https://safe-transaction-chiado.safe.global' 
-const RPC_TESTNET_GNOSIS = 'https://rpc.chiado.gnosis.gateway.fm'
-const SIGNER_PRIVATE_KEY = ''
-const SAFE_OWNERS = [
-  '0x9715D8CF39Dfdc4A5BF8052F765A1b3f28fEd034'
-  //'0x9cCBDE03eDd71074ea9c49e413FA9CDfF16D263B', //public key
-  //'0x56e2C102c664De6DfD7315d12c0178b61D16F171'
-]
-const THRESHOLD = 1;
-const SALT_NONCE = '1234';
 
 const safeAccountConfig: SafeAccountConfig = {
-  owners: SAFE_OWNERS,  //'0x...'
+  owners: env.SAFE_OWNERS,  //'0x...'
   threshold: 1,
-  // More optional properties
 }
 
 const predictedSafe: PredictedSafeProps = {
   safeAccountConfig,
-  safeDeploymentConfig: { saltNonce: SALT_NONCE } //change this to trigger a new safe
+  safeDeploymentConfig: { saltNonce: env.SALT_NONCE } //change this to trigger a new safe
   // More optional properties
 }
 
@@ -55,8 +31,8 @@ export class SafeService {
 
 public async deploysafe(): Promise<string> {
   let mySafe = await Safe.init({
-    provider: gnosisChiado.rpcUrls.default.http[0],
-    signer: SIGNER_PRIVATE_KEY,
+    provider: env.EIP1193PROVIDER,
+    signer: env.SIGNER_PRIVATE_KEY,
     predictedSafe // Optional
   })
   this.safeAddress = await mySafe.getAddress()
@@ -91,15 +67,13 @@ public async deploysafe(): Promise<string> {
   return this.safeAddress
 }
 
-//public async createTransaction(): Promise<TransactionBase> {
-//}
 
 // Send transactions
 public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boolean): Promise<void> {
   this.safeClient = await createSafeClient({
-    provider: RPC_TESTNET_GNOSIS,
-    signer: SIGNER_PRIVATE_KEY,
-    txServiceUrl: TX_SERVICE_URL_CHIADO,
+    provider: env.RPC_TESTNET,
+    signer: env.SIGNER_PRIVATE_KEY,
+    txServiceUrl: env.TX_SERVICE_URL,
     safeAddress: this.safeAddress //'0x...'
   })
     console.log('Safe address:', await this.safeClient.getAddress());
@@ -130,9 +104,9 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
   //Stats information
   public async stats():Promise<SafeDetails>{
     this.safeClient = await createSafeClient({
-      provider: RPC_TESTNET_GNOSIS!,
-      signer: SIGNER_PRIVATE_KEY,
-      txServiceUrl: TX_SERVICE_URL_CHIADO,
+      provider: env.RPC_TESTNET,
+      signer: env.SIGNER_PRIVATE_KEY,
+      txServiceUrl: env.TX_SERVICE_URL,
       safeAddress: this.safeAddress //'0x...'
     })
   //console.log('Safe client:', this.safeClient);
@@ -140,7 +114,7 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
     //this.safeClient!.protocolKit.connect({safeAddress})
     const publicClient = createPublicClient({
       chain: gnosisChiado,
-      transport: http(RPC_TESTNET_GNOSIS)
+      transport: http()
     })
     const balance = await publicClient.getBalance({
       address: this.safeAddress!
@@ -151,7 +125,6 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
         console.log('Safe balance:', formatGwei(balance));
         const owners:string[] = await this.safeClient!.protocolKit.getOwners()
         const threshold = await this.safeClient!.protocolKit.getThreshold()
-        const guard = await this.safeClient!.protocolKit.getGuard()
         const modules = await this.safeClient!.protocolKit.getModules()
 
         //not working because of cors
@@ -168,7 +141,6 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
         pendingTxs: 5,// pendingTxs, //5 Raw count
         //modulesDescription: "1 (Daily Limit)",
         modules: ['AutoRecharge'], //(modules.length == 0) ? ['None'] : modules,//stats.modules, // Raw count
-        guard: guard,//stats.guard,
         createdBy: "Thomas",
         createdDate: "2025-05-10"
       }

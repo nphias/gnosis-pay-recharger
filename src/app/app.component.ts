@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { SafeService } from './services/mysafe.service';
+import { SafeService } from './services/safe.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { parseEther } from 'viem'; // <-- Import parseEther
@@ -15,7 +15,6 @@ export interface SafeDetails {
   pendingTxs?: number; // Raw count
   modulesDescription?: string; // e.g., "1 (Daily Limit)"
   modules?: string[]; // Raw count
-  guard: string | null;
   createdBy: string;
   createdDate: string; // e.g., "2023-11-01"
 }
@@ -65,7 +64,7 @@ export class AppComponent implements OnInit {
         this.safeStatus = 'offline';
         console.warn('Safe not deployed or address not found during init.');
       }
-    } catch (error) {
+    } catch (error:any) {
       console.error('Error during app initialization (deploysafe):', error);
       this.safeStatus = 'offline';
     }
