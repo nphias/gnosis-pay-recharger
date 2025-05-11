@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SafeService } from './services/mysafe.service';
-import { FormsModule } from '@angular/forms'; 
-import { CommonModule } from '@angular/common'; 
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { parseEther } from 'viem'; // <-- Import parseEther
 
 // Define the interface for Safe details
 export interface SafeDetails {
@@ -56,6 +57,7 @@ export class AppComponent implements OnInit {
       if (this.safeAddress) {
         this.safeDeployed = true;
         this.safeStatus = 'ready';
+        this.transactionToAddress = this.safeAddress; // Set the transaction address to the safe address
         // Now that address is known (or safe deployed), fetch full details
         await this.refreshSafeStatus();
       } else {
@@ -83,7 +85,7 @@ export class AppComponent implements OnInit {
         [
           {
             to: this.transactionToAddress,
-            value: this.transactionValue,
+            value: parseEther(this.transactionValue).toString(), // Convert to wei string
             data: this.transactionData as `0x${string}` || '0x',
           },
         ],

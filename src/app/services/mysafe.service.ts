@@ -15,19 +15,19 @@ import { SafeDetails } from '../app.component';
 
 //dotenv.config();
 
-const SEPOLIA_CHAIN_ID = 11155111n;
+/*const SEPOLIA_CHAIN_ID = 11155111n;
 const SEPOLIA_TX_SERVICE_URL = 'https://safe-transaction-sepolia.safe.global';
 const SEPOLIA_RPC_URL = 'https://rpc.sepolia.org';
 const RPC_URL = 'https://ethereum-sepolia-rpc.publicnode.com'
 const RPC_GNOSIS = 'https://rpc.gnosis.gateway.fm'
 const SAFE_ADDRESS = '0x60C4Ab82D06Fd7dFE9517e17736C2Dcc77443EF' //private key
 const OWNER_1_PRIVATE_KEY = '0x9cCBDE03eDd71074ea9c49e413FA9CDfF16D263B'; // Replace with actual private key
-
+*/
 
 //todo move this to a config file .env
-const tx_service_url_CHIADO: string = 'https://safe-transaction-chiado.safe.global' 
+const TX_SERVICE_URL_CHIADO: string = 'https://safe-transaction-chiado.safe.global' 
 const RPC_TESTNET_GNOSIS = 'https://rpc.chiado.gnosis.gateway.fm'
-const METAMASK_PK = ''
+const SIGNER_PRIVATE_KEY = ''
 const SAFE_OWNERS = [
   '0x9715D8CF39Dfdc4A5BF8052F765A1b3f28fEd034'
   //'0x9cCBDE03eDd71074ea9c49e413FA9CDfF16D263B', //public key
@@ -35,11 +35,6 @@ const SAFE_OWNERS = [
 ]
 const THRESHOLD = 1;
 const SALT_NONCE = '1234';
-
-/* const a_RPC_URL = 'https://rpc.gnosis.gateway.fm'
-const a_OWNER_1_PRIVATE_KEY='0xabc...'
-const b_OWNER_2_PRIVATE_KEY='0xdef...'
-const c_OWNER_3_PRIVATE_KEY='0x123...' */
 
 const safeAccountConfig: SafeAccountConfig = {
   owners: SAFE_OWNERS,  //'0x...'
@@ -61,7 +56,7 @@ export class SafeService {
 public async deploysafe(): Promise<string> {
   let mySafe = await Safe.init({
     provider: gnosisChiado.rpcUrls.default.http[0],
-    signer: METAMASK_PK,
+    signer: SIGNER_PRIVATE_KEY,
     predictedSafe // Optional
   })
   this.safeAddress = await mySafe.getAddress()
@@ -96,28 +91,23 @@ public async deploysafe(): Promise<string> {
   return this.safeAddress
 }
 
+//public async createTransaction(): Promise<TransactionBase> {
+//}
 
-  // STEP 1: Create Safe with 3 owners and a threshold if it doesn't exist and return the client
+// Send transactions
 public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boolean): Promise<void> {
   this.safeClient = await createSafeClient({
-    provider: RPC_TESTNET_GNOSIS!,
-    signer: METAMASK_PK,
+    provider: RPC_TESTNET_GNOSIS,
+    signer: SIGNER_PRIVATE_KEY,
+    txServiceUrl: TX_SERVICE_URL_CHIADO,
     safeAddress: this.safeAddress //'0x...'
   })
-    /*this.safeClient = await createSafeClient({
-      provider: RPC_TESTNET_GNOSIS!,
-      signer: METAMASK_PK!,
-      txServiceUrl: tx_service_url_CHIADO,
-      safeOptions: {
-        owners: SAFE_OWNERS,
-        threshold: Number(THRESHOLD),
-        saltNonce: SALT_NONCE
-      }
-    });*/
-    console.log('Safe :', await this.safeClient.getAddress());
+    console.log('Safe address:', await this.safeClient.getAddress());
     console.log('Safe client:', this.safeClient);
-    console.log('Auto recharge parameter in service:', autoRecharge); // Log the new parameter
+    //console.log('Auto recharge parameter in service:', autoRecharge); // Log the new parameter
+    console.log('Transactions to send:', transactions);
 
+    //SEND TRANSACTION
     const txResult = await this.safeClient.send({ transactions })
     console.log('Transaction result:', txResult);
     const safeTxHash = txResult.transactions?.safeTxHash
@@ -136,19 +126,21 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
     return Promise.resolve();
   }
 
+
+  //Stats information
   public async stats():Promise<SafeDetails>{
     this.safeClient = await createSafeClient({
       provider: RPC_TESTNET_GNOSIS!,
-      signer: METAMASK_PK,
-      txServiceUrl: tx_service_url_CHIADO,
+      signer: SIGNER_PRIVATE_KEY,
+      txServiceUrl: TX_SERVICE_URL_CHIADO,
       safeAddress: this.safeAddress //'0x...'
     })
   //console.log('Safe client:', this.safeClient);
   let safeAddress  = this.safeAddress
-    this.safeClient!.protocolKit.connect({safeAddress})
+    //this.safeClient!.protocolKit.connect({safeAddress})
     const publicClient = createPublicClient({
       chain: gnosisChiado,
-      transport: http()
+      transport: http(RPC_TESTNET_GNOSIS)
     })
     const balance = await publicClient.getBalance({
       address: this.safeAddress!
@@ -188,6 +180,7 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
     }
   }
 
+  //helper function to get the description of the last pending transaction
   private getTxnDescription(pendingTx:SafeMultisigTransactionResponse): string {
   
     const flat: Record<string, string> = {}
