@@ -39,6 +39,15 @@ export class AppComponent implements OnInit {
     // Initialize the app
   }
 
+  get isBalanceBelowThreshold(): boolean {
+    if (this.safeDetails && this.safeDetails.balance) {
+      // Assuming balance is like "123.45 XDAI" or just "123.45"
+      const balanceValue = parseFloat(this.safeDetails.balance.split(' ')[0]);
+      return !isNaN(balanceValue) && balanceValue < 10;
+    }
+    return false;
+  }
+
   async ngOnInit() {
     this.safeStatus = 'loading';
     try {
@@ -60,20 +69,26 @@ export class AppComponent implements OnInit {
     }
   }
 
-  async sendTransaction() {
+  async sendTransaction(autoRecharge: boolean) {
     if (!this.transactionToAddress || !this.transactionValue) {
       console.error('To Address and Value are required for a transaction.');
       alert('Please fill in "To Address" and "Value"');
       return;
     }
     try {
-      await this.safeService.sendTransaction([
-        {
-          to: this.transactionToAddress,
-          value: this.transactionValue,
-          data: this.transactionData as `0x${string}` || '0x',
-        },
-      ]);
+      // Log the autoRecharge parameter for debugging
+      console.log(`Sending transaction with autoRecharge: ${autoRecharge}`);
+
+      await this.safeService.sendTransaction(
+        [
+          {
+            to: this.transactionToAddress,
+            value: this.transactionValue,
+            data: this.transactionData as `0x${string}` || '0x',
+          },
+        ],
+        autoRecharge // Pass the new parameter to the service
+      );
       console.log('Transaction sent successfully from AppComponent');
       alert('Transaction sent!');
     } catch (error) {

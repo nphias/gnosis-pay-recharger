@@ -27,7 +27,7 @@ const OWNER_1_PRIVATE_KEY = '0x9cCBDE03eDd71074ea9c49e413FA9CDfF16D263B'; // Rep
 //todo move this to a config file .env
 const tx_service_url_CHIADO: string = 'https://safe-transaction-chiado.safe.global' 
 const RPC_TESTNET_GNOSIS = 'https://rpc.chiado.gnosis.gateway.fm'
-const METAMASK_PK = '76469efddbd8d5e6a7b2d52ff28cc1099437b160a17973f829973e1eb57ccef8'
+const METAMASK_PK = ''
 const SAFE_OWNERS = [
   '0x9715D8CF39Dfdc4A5BF8052F765A1b3f28fEd034'
   //'0x9cCBDE03eDd71074ea9c49e413FA9CDfF16D263B', //public key
@@ -98,7 +98,7 @@ public async deploysafe(): Promise<string> {
 
 
   // STEP 1: Create Safe with 3 owners and a threshold if it doesn't exist and return the client
-public async sendTransaction(transactions:TransactionBase[]): Promise<void> {
+public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boolean): Promise<void> {
   this.safeClient = await createSafeClient({
     provider: RPC_TESTNET_GNOSIS!,
     signer: METAMASK_PK,
@@ -116,6 +116,11 @@ public async sendTransaction(transactions:TransactionBase[]): Promise<void> {
     });*/
     console.log('Safe :', await this.safeClient.getAddress());
     console.log('Safe client:', this.safeClient);
+    console.log('Auto recharge parameter in service:', autoRecharge); // Log the new parameter
+
+    // Here you would typically adjust the 'transactions' array if autoRecharge is true,
+    // for example, by adding another transaction to top up the account.
+    // For now, we are just logging it as per the current scope.
 
     const txResult = await this.safeClient.send({ transactions })
     console.log('Transaction result:', txResult);
@@ -174,7 +179,7 @@ public async sendTransaction(transactions:TransactionBase[]): Promise<void> {
         lastPendingTxsDescription: "1 (Waiting for Bob)",
         pendingTxs: 5,// pendingTxs, //5 Raw count
         //modulesDescription: "1 (Daily Limit)",
-        modules: (modules.length == 0) ? ['None'] : modules,//stats.modules, // Raw count
+        modules: ['AutoRecharge'], //(modules.length == 0) ? ['None'] : modules,//stats.modules, // Raw count
         guard: guard,//stats.guard,
         createdBy: "Thomas",
         createdDate: "2025-05-10"
