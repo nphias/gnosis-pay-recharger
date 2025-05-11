@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SafeService } from './services/mysafe.service';
-import { FormsModule } from '@angular/forms'; // Import FormsModule
-import { CommonModule } from '@angular/common'; // Import CommonModule
+import { FormsModule } from '@angular/forms'; 
+import { CommonModule } from '@angular/common'; 
 
 // Define the interface for Safe details
 export interface SafeDetails {
@@ -110,10 +110,6 @@ export class AppComponent implements OnInit {
         this.safeDetails = null;
         return;
       }
-      
-      // Assuming this.safeService.stats() will use the configured/deployed safe
-      // and return details or throw if not found/error.
-      // It might need this.safeAddress if your service is designed that way: e.g., this.safeService.stats(this.safeAddress)
       const details: SafeDetails = await this.safeService.stats();
 
       if (details) {

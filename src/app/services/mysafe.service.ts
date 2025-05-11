@@ -118,10 +118,6 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
     console.log('Safe client:', this.safeClient);
     console.log('Auto recharge parameter in service:', autoRecharge); // Log the new parameter
 
-    // Here you would typically adjust the 'transactions' array if autoRecharge is true,
-    // for example, by adding another transaction to top up the account.
-    // For now, we are just logging it as per the current scope.
-
     const txResult = await this.safeClient.send({ transactions })
     console.log('Transaction result:', txResult);
     const safeTxHash = txResult.transactions?.safeTxHash
