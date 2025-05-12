@@ -3,7 +3,9 @@ import { RouterOutlet } from '@angular/router';
 import { SafeService } from './services/safe.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { parseEther } from 'viem'; // <-- Import parseEther
+import { parseEther } from 'viem';
+import { environment as env } from '../environments/environment';
+
 
 // Define the interface for Safe details
 export interface SafeDetails {
@@ -31,7 +33,7 @@ export class AppComponent implements OnInit {
   safeAddress: string | null = null;
   safeStatus: string = 'loading'; // Initial status: loading, ready, offline, error_fetching_details
   safeDetails: SafeDetails | null = null;
-  transactionToAddress: string = '0x9715D8CF39Dfdc4A5BF8052F765A1b3f28fEd034';
+  transactionToAddress: string = 'your safe address';
   transactionValue: string = '0'; // Default to 0, will be treated as wei
   transactionData: string = '0x';
 
@@ -66,7 +68,7 @@ export class AppComponent implements OnInit {
       }
     } catch (error:any) {
       console.error('Error during app initialization (deploysafe):', error);
-      this.safeStatus = 'offline';
+      this.safeStatus = error.message || 'offline'; // Use error message if available
     }
   }
 
@@ -80,16 +82,12 @@ export class AppComponent implements OnInit {
       // Log the autoRecharge parameter for debugging
       console.log(`Sending transaction with autoRecharge: ${autoRecharge}`);
 
-      await this.safeService.sendTransaction(
-        [
-          {
-            to: this.transactionToAddress,
-            value: parseEther(this.transactionValue).toString(), // Convert to wei string
-            data: this.transactionData as `0x${string}` || '0x',
-          },
-        ],
-        autoRecharge // Pass the new parameter to the service
+      await this.safeService.sendToSafe(
+            this.transactionValue,//).toString(), // Convert to wei string ...parseEther
+            this.transactionData as `0x${string}` || '0x',
+         // Pass the new parameter to the service
       );
+      await this.refreshSafeStatus(); // Refresh status after sending
       console.log('Transaction sent successfully from AppComponent');
       alert('Transaction sent!');
     } catch (error) {

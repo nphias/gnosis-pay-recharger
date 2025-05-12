@@ -7,10 +7,13 @@ import Safe, {
   SafeDeploymentConfig
 } from '@safe-global/protocol-kit'
 import { gnosisChiado } from 'viem/chains'
-import { createPublicClient, http, formatEther, formatGwei } from 'viem'
+import { createPublicClient, createWalletClient, http, formatEther, formatGwei, Chain, ClientConfig, EIP1193RequestFn, TransportConfig} from 'viem'
+import { privateKeyToAccount } from 'viem/accounts';
+
 import { SafeMultisigTransactionResponse, TransactionBase } from '@safe-global/types-kit';
 import { SafeDetails } from '../app.component';
 import { environment as env } from '../../environments/environment';
+import { formatAbiItem } from 'viem/utils';
 
 
 const safeAccountConfig: SafeAccountConfig = {
@@ -81,6 +84,8 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
     //console.log('Auto recharge parameter in service:', autoRecharge); // Log the new parameter
     console.log('Transactions to send:', transactions);
 
+    const signerAddress = await this.safeClient.protocolKit.getSafeProvider();
+    console.log('Signer address:', signerAddress);
     //SEND TRANSACTION
     const txResult = await this.safeClient.send({ transactions })
     console.log('Transaction result:', txResult);
@@ -100,6 +105,20 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
     return Promise.resolve();
   }
 
+  public async sendToSafe(value: string, data: string): Promise<void> {
+    const client = createWalletClient({
+      account: privateKeyToAccount(`0x${env.SIGNER_PRIVATE_KEY}`),
+      chain: gnosisChiado,
+      transport: http(env.EIP1193PROVIDER),
+    // Implement the logic to send a transaction from the wallet
+    })
+    const txHash = await client.sendTransaction({
+      to: this.safeAddress,
+      value: BigInt(value),
+      data: data as `0x${string}`,
+    }) 
+    console.log('Transaction hash:', txHash);
+  }
 
   //Stats information
   public async stats():Promise<SafeDetails>{
@@ -114,7 +133,7 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
     //this.safeClient!.protocolKit.connect({safeAddress})
     const publicClient = createPublicClient({
       chain: gnosisChiado,
-      transport: http()
+      transport: http(env.EIP1193PROVIDER)
     })
     const balance = await publicClient.getBalance({
       address: this.safeAddress!
@@ -122,11 +141,14 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
     try {
         const address = await this.safeClient!.getAddress()
         //const balance = await this.safeClient!.protocolKit.getBalance()
-        console.log('Safe balance:', formatGwei(balance));
+        const xDaiAmount = balance
+        console.log('Safe balance:', xDaiAmount);
+        console.log(`${xDaiAmount} xDAI`);
         const owners:string[] = await this.safeClient!.protocolKit.getOwners()
         const threshold = await this.safeClient!.protocolKit.getThreshold()
         const modules = await this.safeClient!.protocolKit.getModules()
-
+        //const pendingTransactions = await this.safeClient!.getPendingTransactions()
+        //console.log('Pending transactions:', pendingTransactions);
         //not working because of cors
         //const pendingTransactions = await this.safeClient!.getPendingTransactions()
         //console.log('Pending transactions:', pendingTransactions);
@@ -134,7 +156,7 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
         //const lastPending  = await this.getTxnDescription(pendingTransactions.results[pendingTransactions.count-1])
       let safeDetails:SafeDetails = {
         address: safeAddress!,
-        balance: formatEther(balance),
+        balance: `${xDaiAmount} xDAI`,
         owners: owners,
         threshold: threshold, //1,//stats.threshold,
         lastPendingTxsDescription: "1 (Waiting for Bob)",
@@ -169,10 +191,9 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
     }
   
     return Object.entries(flat)
-      .map(([k, v]) => `${k}=${v}`)
+      .map(([k, v]) => `, $, { k } = $, { v } `)
       .join(', ')
   }
-
   
 //end of file  
 }
