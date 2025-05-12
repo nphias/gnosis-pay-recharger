@@ -4,7 +4,7 @@ import { SafeService } from './services/safe.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { parseEther } from 'viem';
-import { environment as env } from '../environments/environment';
+import { environment as env } from '../environments/environment.temp';
 
 
 // Define the interface for Safe details
@@ -33,7 +33,6 @@ export class AppComponent implements OnInit {
   safeAddress: string | null = null;
   safeStatus: string = 'loading'; // Initial status: loading, ready, offline, error_fetching_details
   safeDetails: SafeDetails | null = null;
-  transactionToAddress: string = 'your safe address';
   transactionValue: string = '0'; // Default to 0, will be treated as wei
   transactionData: string = '0x';
 
@@ -58,7 +57,6 @@ export class AppComponent implements OnInit {
       if (this.safeAddress) {
         this.safeDeployed = true;
         this.safeStatus = 'ready';
-        this.transactionToAddress = this.safeAddress; // Set the transaction address to the safe address
         // Now that address is known (or safe deployed), fetch full details
         await this.refreshSafeStatus();
       } else {
@@ -73,9 +71,9 @@ export class AppComponent implements OnInit {
   }
 
   async sendTransaction(autoRecharge: boolean) {
-    if (!this.transactionToAddress || !this.transactionValue) {
-      console.error('To Address and Value are required for a transaction.');
-      alert('Please fill in "To Address" and "Value"');
+    if (!this.transactionValue) {
+      console.error('A Value is required for a transaction.');
+      alert('Please fill in the "Value"');
       return;
     }
     try {
@@ -83,8 +81,8 @@ export class AppComponent implements OnInit {
       console.log(`Sending transaction with autoRecharge: ${autoRecharge}`);
 
       await this.safeService.sendToSafe(
-            this.transactionValue,//).toString(), // Convert to wei string ...parseEther
-            this.transactionData as `0x${string}` || '0x',
+        this.transactionValue,//).toString(), // Convert to wei string ...parseEther
+        this.transactionData as `0x${string}` || '0x',
          // Pass the new parameter to the service
       );
       await this.refreshSafeStatus(); // Refresh status after sending

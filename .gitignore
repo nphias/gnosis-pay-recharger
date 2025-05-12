@@ -43,3 +43,4 @@ Thumbs.db
 
 # reference files
 /src/app/services/reference.safe.service.ts
+/src/environments/environment.temp.ts

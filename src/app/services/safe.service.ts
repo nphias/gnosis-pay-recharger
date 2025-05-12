@@ -12,7 +12,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 
 import { SafeMultisigTransactionResponse, TransactionBase } from '@safe-global/types-kit';
 import { SafeDetails } from '../app.component';
-import { environment as env } from '../../environments/environment';
+import { environment as env } from '../../environments/environment.temp';
 import { formatAbiItem } from 'viem/utils';
 
 
@@ -74,7 +74,7 @@ public async deploysafe(): Promise<string> {
 // Send transactions
 public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boolean): Promise<void> {
   this.safeClient = await createSafeClient({
-    provider: env.RPC_TESTNET,
+    provider: env.RPC_URL,
     signer: env.SIGNER_PRIVATE_KEY,
     txServiceUrl: env.TX_SERVICE_URL,
     safeAddress: this.safeAddress //'0x...'
@@ -123,7 +123,7 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
   //Stats information
   public async stats():Promise<SafeDetails>{
     this.safeClient = await createSafeClient({
-      provider: env.RPC_TESTNET,
+      provider: env.RPC_URL,
       signer: env.SIGNER_PRIVATE_KEY,
       txServiceUrl: env.TX_SERVICE_URL,
       safeAddress: this.safeAddress //'0x...'
@@ -159,7 +159,7 @@ public async sendTransaction(transactions: TransactionBase[], autoRecharge?: boo
         balance: `${xDaiAmount} xDAI`,
         owners: owners,
         threshold: threshold, //1,//stats.threshold,
-        lastPendingTxsDescription: "1 (Waiting for Bob)",
+        lastPendingTxsDescription: 'none',//"1 (Waiting for Bob)",
         pendingTxs: 5,// pendingTxs, //5 Raw count
         //modulesDescription: "1 (Daily Limit)",
         modules: ['AutoRecharge'], //(modules.length == 0) ? ['None'] : modules,//stats.modules, // Raw count
